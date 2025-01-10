@@ -9,7 +9,6 @@ const CreditCardDropdown = () => {
   const [selectedCard, setSelectedCard] = useState("");
   const [swiggyOffers, setSwiggyOffers] = useState([]);
   const [zomatoOffers, setZomatoOffers] = useState([]);
-  const [noOffersMessage, setNoOffersMessage] = useState(false); // Added for 'No Offers' message
 
   useEffect(() => {
     const fetchAndParseCSV = (filePath) =>
@@ -84,16 +83,11 @@ const CreditCardDropdown = () => {
         fetchAndParseCSV("/Zomato.csv"),
       ]);
 
-      const swiggyFilteredOffers = filterOffers(swiggyData, card);
-      const zomatoFilteredOffers = filterOffers(zomatoData, card);
+      const swiggyFiltered = filterOffers(swiggyData, card);
+      const zomatoFiltered = filterOffers(zomatoData, card);
 
-      setSwiggyOffers(swiggyFilteredOffers);
-      setZomatoOffers(zomatoFilteredOffers);
-
-      // Set 'No Offers' message if no offers found
-      setNoOffersMessage(
-        swiggyFilteredOffers.length === 0 && zomatoFilteredOffers.length === 0
-      );
+      setSwiggyOffers(swiggyFiltered);
+      setZomatoOffers(zomatoFiltered);
     } catch (error) {
       console.error("Error fetching or filtering offers:", error);
     }
@@ -102,16 +96,17 @@ const CreditCardDropdown = () => {
   const handleSearchChange = (e) => {
     const value = e.target.value.toLowerCase();
     setSearchTerm(value);
-    setFilteredCards(
-      creditCards.filter((card) => card.toLowerCase().startsWith(value))
-    );
 
-    // Clear offers if input is cleared
-    if (value === "") {
-      setSelectedCard("");
+    if (!value) {
+      // Clear all offers if input is cleared
+      setFilteredCards([]);
       setSwiggyOffers([]);
       setZomatoOffers([]);
-      setNoOffersMessage(false);
+      setSelectedCard("");
+    } else {
+      setFilteredCards(
+        creditCards.filter((card) => card.toLowerCase().startsWith(value))
+      );
     }
   };
 
@@ -125,7 +120,6 @@ const CreditCardDropdown = () => {
   return (
     <div className="container">
       <h1>Offers on Zomato and Swiggy</h1>
-      <label htmlFor="creditCardSearch">Search Credit Card:</label>
       <div className="search-dropdown">
         <input
           id="creditCardSearch"
@@ -152,6 +146,9 @@ const CreditCardDropdown = () => {
 
       {selectedCard && (
         <div className="offers-section">
+          {zomatoOffers.length === 0 && swiggyOffers.length === 0 && (
+            <p>No offers found for this card.</p>
+          )}
           {zomatoOffers.length > 0 && (
             <div>
               <h2 className="offers-heading">Offers on Zomato</h2>
@@ -185,9 +182,6 @@ const CreditCardDropdown = () => {
                 ))}
               </div>
             </div>
-          )}
-          {noOffersMessage && (
-            <p className="no-offers-message">No offers found for this card.</p>
           )}
         </div>
       )}
