@@ -9,6 +9,7 @@ const CreditCardDropdown = () => {
   const [selectedCard, setSelectedCard] = useState("");
   const [swiggyOffers, setSwiggyOffers] = useState([]);
   const [zomatoOffers, setZomatoOffers] = useState([]);
+  const [noOffersMessage, setNoOffersMessage] = useState(false); // Added for 'No Offers' message
 
   useEffect(() => {
     const fetchAndParseCSV = (filePath) =>
@@ -83,8 +84,16 @@ const CreditCardDropdown = () => {
         fetchAndParseCSV("/Zomato.csv"),
       ]);
 
-      setSwiggyOffers(filterOffers(swiggyData, card));
-      setZomatoOffers(filterOffers(zomatoData, card));
+      const swiggyFilteredOffers = filterOffers(swiggyData, card);
+      const zomatoFilteredOffers = filterOffers(zomatoData, card);
+
+      setSwiggyOffers(swiggyFilteredOffers);
+      setZomatoOffers(zomatoFilteredOffers);
+
+      // Set 'No Offers' message if no offers found
+      setNoOffersMessage(
+        swiggyFilteredOffers.length === 0 && zomatoFilteredOffers.length === 0
+      );
     } catch (error) {
       console.error("Error fetching or filtering offers:", error);
     }
@@ -96,6 +105,14 @@ const CreditCardDropdown = () => {
     setFilteredCards(
       creditCards.filter((card) => card.toLowerCase().startsWith(value))
     );
+
+    // Clear offers if input is cleared
+    if (value === "") {
+      setSelectedCard("");
+      setSwiggyOffers([]);
+      setZomatoOffers([]);
+      setNoOffersMessage(false);
+    }
   };
 
   const handleCardSelect = (card) => {
@@ -168,6 +185,9 @@ const CreditCardDropdown = () => {
                 ))}
               </div>
             </div>
+          )}
+          {noOffersMessage && (
+            <p className="no-offers-message">No offers found for this card.</p>
           )}
         </div>
       )}
