@@ -120,7 +120,6 @@ const CreditCardDropdown = () => {
   return (
     <div className="container">
       <h1>Offers on Zomato and Swiggy</h1>
-      <label htmlFor="creditCardSearch">Search Credit Card:</label>
       <div className="search-dropdown">
         <input
           id="creditCardSearch"
