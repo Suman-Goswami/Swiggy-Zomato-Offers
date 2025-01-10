@@ -2,10 +2,11 @@ import React, { useState, useEffect } from "react";
 import Papa from "papaparse";
 import "./App.css";
 
-const CreditCardDropdown = () => {
+const CreditCardOffers = () => {
   const [creditCards, setCreditCards] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredCards, setFilteredCards] = useState([]);
+  const [selectedCard, setSelectedCard] = useState(null);
   const [swiggyOffers, setSwiggyOffers] = useState([]);
   const [zomatoOffers, setZomatoOffers] = useState([]);
   const [showNoOffersMessage, setShowNoOffersMessage] = useState(false);
@@ -107,6 +108,7 @@ const CreditCardDropdown = () => {
 
     if (!value) {
       setFilteredCards(creditCards);
+      setSelectedCard(null);
       setSwiggyOffers([]);
       setZomatoOffers([]);
       setShowNoOffersMessage(false);
@@ -117,15 +119,21 @@ const CreditCardDropdown = () => {
 
       setFilteredCards(matchingCards);
 
-      if (matchingCards.length > 0) {
-        setShowNoOffersMessage(false);
-        fetchOffers(value);
-      } else {
+      if (matchingCards.length === 0) {
         setShowNoOffersMessage(true);
         setSwiggyOffers([]);
         setZomatoOffers([]);
+      } else {
+        setShowNoOffersMessage(false);
       }
     }
+  };
+
+  const handleCardSelection = (card) => {
+    setSearchTerm(card);
+    setSelectedCard(card);
+    setFilteredCards([]);
+    fetchOffers(card);
   };
 
   return (
@@ -143,7 +151,11 @@ const CreditCardDropdown = () => {
       {filteredCards.length > 0 && (
         <ul className="dropdown">
           {filteredCards.map((card, index) => (
-            <li key={index} className="dropdown-item">
+            <li
+              key={index}
+              className="dropdown-item"
+              onClick={() => handleCardSelection(card)}
+            >
               {card}
             </li>
           ))}
@@ -154,40 +166,33 @@ const CreditCardDropdown = () => {
         <p className="no-offers-message">No offers found for this card.</p>
       )}
 
-      {(swiggyOffers.length > 0 || zomatoOffers.length > 0) && (
+      {(swiggyOffers.length > 0 || zomatoOffers.length > 0) && selectedCard && (
         <div className="offers-section">
+          <h2>Offers for {selectedCard}</h2>
           {swiggyOffers.length > 0 && (
             <div>
-              <h2 className="offers-heading">Offers on Swiggy</h2>
-              <div className="offers-cards-container">
+              <h3>Swiggy</h3>
+              <ul>
                 {swiggyOffers.map((offer, index) => (
-                  <div key={index} className="offer-card">
-                    <p>
-                      <strong>Offer:</strong> {offer.offer}
-                    </p>
-                    <p>
-                      <strong>Coupon Code:</strong> {offer.coupon}
-                    </p>
-                  </div>
+                  <li key={index}>
+                    <strong>Offer:</strong> {offer.offer} <br />
+                    <strong>Coupon Code:</strong> {offer.coupon}
+                  </li>
                 ))}
-              </div>
+              </ul>
             </div>
           )}
           {zomatoOffers.length > 0 && (
             <div>
-              <h2 className="offers-heading">Offers on Zomato</h2>
-              <div className="offers-cards-container">
+              <h3>Zomato</h3>
+              <ul>
                 {zomatoOffers.map((offer, index) => (
-                  <div key={index} className="offer-card">
-                    <p>
-                      <strong>Offer:</strong> {offer.offer}
-                    </p>
-                    <p>
-                      <strong>Coupon Code:</strong> {offer.coupon}
-                    </p>
-                  </div>
+                  <li key={index}>
+                    <strong>Offer:</strong> {offer.offer} <br />
+                    <strong>Coupon Code:</strong> {offer.coupon}
+                  </li>
                 ))}
-              </div>
+              </ul>
             </div>
           )}
         </div>
@@ -196,4 +201,4 @@ const CreditCardDropdown = () => {
   );
 };
 
-export default CreditCardDropdown;
+export default CreditCardOffers;
