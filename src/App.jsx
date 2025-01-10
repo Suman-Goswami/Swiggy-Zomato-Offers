@@ -120,6 +120,7 @@ const CreditCardDropdown = () => {
   return (
     <div className="container">
       <h1>Offers on Zomato and Swiggy</h1>
+      <label htmlFor="creditCardSearch">Search Credit Card:</label>
       <div className="search-dropdown">
         <input
           id="creditCardSearch"
@@ -147,7 +148,7 @@ const CreditCardDropdown = () => {
       {selectedCard && (
         <div className="offers-section">
           {zomatoOffers.length === 0 && swiggyOffers.length === 0 && (
-            <p>No offers found for this card.</p>
+            <p className="no-offers-message">No offers found for this card.</p>
           )}
           {zomatoOffers.length > 0 && (
             <div>
