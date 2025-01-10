@@ -9,6 +9,7 @@ const CreditCardDropdown = () => {
   const [selectedCard, setSelectedCard] = useState("");
   const [swiggyOffers, setSwiggyOffers] = useState([]);
   const [zomatoOffers, setZomatoOffers] = useState([]);
+  const [showNoOffersMessage, setShowNoOffersMessage] = useState(false);
 
   useEffect(() => {
     const fetchAndParseCSV = (filePath) =>
@@ -88,6 +89,13 @@ const CreditCardDropdown = () => {
 
       setSwiggyOffers(swiggyFiltered);
       setZomatoOffers(zomatoFiltered);
+
+      // If offers exist, do not show the "No offers" message
+      if (swiggyFiltered.length > 0 || zomatoFiltered.length > 0) {
+        setShowNoOffersMessage(false);
+      } else {
+        setShowNoOffersMessage(true);
+      }
     } catch (error) {
       console.error("Error fetching or filtering offers:", error);
     }
@@ -103,6 +111,7 @@ const CreditCardDropdown = () => {
       setSwiggyOffers([]);
       setZomatoOffers([]);
       setSelectedCard("");
+      setShowNoOffersMessage(false);
     } else {
       setFilteredCards(
         creditCards.filter((card) => card.toLowerCase().startsWith(value))
@@ -114,7 +123,19 @@ const CreditCardDropdown = () => {
     setSelectedCard(card);
     setSearchTerm(card);
     setFilteredCards([]);
+    setShowNoOffersMessage(false); // Reset message visibility
     fetchOffers(card);
+  };
+
+  const handleSearchSubmit = () => {
+    if (!creditCards.includes(searchTerm)) {
+      setShowNoOffersMessage(true);
+      setSwiggyOffers([]);
+      setZomatoOffers([]);
+    } else {
+      setShowNoOffersMessage(false);
+      fetchOffers(searchTerm);
+    }
   };
 
   return (
@@ -129,6 +150,7 @@ const CreditCardDropdown = () => {
           placeholder="Type to search..."
           className="search-input"
         />
+        <button onClick={handleSearchSubmit}>Search</button>
         {filteredCards.length > 0 && (
           <ul className="dropdown-list">
             {filteredCards.map((card, index) => (
@@ -144,11 +166,12 @@ const CreditCardDropdown = () => {
         )}
       </div>
 
+      {showNoOffersMessage && (
+        <p className="no-offers-message">No offers found for this card.</p>
+      )}
+
       {selectedCard && (
         <div className="offers-section">
-          {zomatoOffers.length === 0 && swiggyOffers.length === 0 && (
-            <p className="no-offers-message">No offers found for this card.</p>
-          )}
           {zomatoOffers.length > 0 && (
             <div>
               <h2 className="offers-heading">Offers on Zomato</h2>
