@@ -90,7 +90,6 @@ const CreditCardDropdown = () => {
         setSwiggyOffers(swiggyFiltered);
         setZomatoOffers(zomatoFiltered);
 
-        // If offers exist, do not show the "No offers" message
         setShowNoOffersMessage(
           swiggyFiltered.length === 0 && zomatoFiltered.length === 0
         );
@@ -107,18 +106,25 @@ const CreditCardDropdown = () => {
     setSearchTerm(value);
 
     if (!value) {
-      // Clear all offers and reset message if input is cleared
+      setFilteredCards(creditCards);
       setSwiggyOffers([]);
       setZomatoOffers([]);
       setShowNoOffersMessage(false);
-    } else if (!creditCards.includes(value)) {
-      // Show no offers message if the card name is not in the list
-      setSwiggyOffers([]);
-      setZomatoOffers([]);
-      setShowNoOffersMessage(true);
     } else {
-      // Fetch offers if the card name exists
-      fetchOffers(value);
+      const matchingCards = creditCards.filter((card) =>
+        card.toLowerCase().startsWith(value.toLowerCase())
+      );
+
+      setFilteredCards(matchingCards);
+
+      if (matchingCards.length > 0) {
+        setShowNoOffersMessage(false);
+        fetchOffers(value);
+      } else {
+        setShowNoOffersMessage(true);
+        setSwiggyOffers([]);
+        setZomatoOffers([]);
+      }
     }
   };
 
@@ -133,6 +139,16 @@ const CreditCardDropdown = () => {
         placeholder="Type to search..."
         className="search-input"
       />
+
+      {filteredCards.length > 0 && (
+        <ul className="dropdown">
+          {filteredCards.map((card, index) => (
+            <li key={index} className="dropdown-item">
+              {card}
+            </li>
+          ))}
+        </ul>
+      )}
 
       {showNoOffersMessage && (
         <p className="no-offers-message">No offers found for this card.</p>
