@@ -7,12 +7,31 @@ body {
   padding: 0;
 }
 
+.dropdown {
+  border: 1px solid #ccc;
+  max-height: 150px;
+  overflow-y: auto;
+  list-style-type: none;
+  padding: 0;
+  margin: 10px 0;
+}
+
+.dropdown-item {
+  padding: 10px;
+  cursor: pointer;
+}
+
+.dropdown-item:hover {
+  background-color: #f0f0f0;
+}
+
 .no-offers-message {
   color: red;
   text-align: center;
   font-size: 1.5rem;
   margin-top: 20px;
 }
+
 
 
 /* Container styling */
@@ -110,13 +129,5 @@ select {
   z-index: 10;
 }
 
-.dropdown-item {
-  padding: 10px;
-  cursor: pointer;
-}
-
-.dropdown-item:hover {
-  background: #f0f0f0;
-}
 
 
