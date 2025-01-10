@@ -2,14 +2,14 @@ import React, { useState, useEffect } from "react";
 import Papa from "papaparse";
 import "./App.css";
 
-const CreditCardOffers = () => {
+const CreditCardDropdown = () => {
   const [creditCards, setCreditCards] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredCards, setFilteredCards] = useState([]);
-  const [selectedCard, setSelectedCard] = useState(null);
+  const [selectedCard, setSelectedCard] = useState("");
   const [swiggyOffers, setSwiggyOffers] = useState([]);
   const [zomatoOffers, setZomatoOffers] = useState([]);
-  const [showNoOffersMessage, setShowNoOffersMessage] = useState(false);
+  const [noOffersMessage, setNoOffersMessage] = useState("");
 
   useEffect(() => {
     const fetchAndParseCSV = (filePath) =>
@@ -50,7 +50,7 @@ const CreditCardOffers = () => {
         const uniqueCards = Array.from(new Set(allCards));
 
         setCreditCards(uniqueCards);
-        setFilteredCards(uniqueCards); // Initialize filtered cards
+        setFilteredCards(uniqueCards);
       } catch (error) {
         console.error("Error fetching or parsing CSV files:", error);
       }
@@ -59,7 +59,7 @@ const CreditCardOffers = () => {
     fetchData();
   }, []);
 
-  const fetchOffers = (card) => {
+  const fetchOffers = async (card) => {
     const fetchAndParseCSV = (filePath) =>
       new Promise((resolve, reject) => {
         Papa.parse(filePath, {
@@ -78,60 +78,56 @@ const CreditCardOffers = () => {
           coupon: row["Coupon code"],
         }));
 
-    const loadOffers = async () => {
-      try {
-        const [swiggyData, zomatoData] = await Promise.all([
-          fetchAndParseCSV("/Swiggy.csv"),
-          fetchAndParseCSV("/Zomato.csv"),
-        ]);
+    try {
+      const [swiggyData, zomatoData] = await Promise.all([
+        fetchAndParseCSV("/Swiggy.csv"),
+        fetchAndParseCSV("/Zomato.csv"),
+      ]);
 
-        const swiggyFiltered = filterOffers(swiggyData, card);
-        const zomatoFiltered = filterOffers(zomatoData, card);
+      const swiggyFiltered = filterOffers(swiggyData, card);
+      const zomatoFiltered = filterOffers(zomatoData, card);
 
-        setSwiggyOffers(swiggyFiltered);
-        setZomatoOffers(zomatoFiltered);
+      setSwiggyOffers(swiggyFiltered);
+      setZomatoOffers(zomatoFiltered);
 
-        setShowNoOffersMessage(
-          swiggyFiltered.length === 0 && zomatoFiltered.length === 0
-        );
-      } catch (error) {
-        console.error("Error fetching or filtering offers:", error);
-      }
-    };
-
-    loadOffers();
-  };
-
-  const handleSearchChange = (e) => {
-    const value = e.target.value.trim();
-    setSearchTerm(value);
-
-    if (!value) {
-      setFilteredCards(creditCards);
-      setSelectedCard(null);
-      setSwiggyOffers([]);
-      setZomatoOffers([]);
-      setShowNoOffersMessage(false);
-    } else {
-      const matchingCards = creditCards.filter((card) =>
-        card.toLowerCase().startsWith(value.toLowerCase())
-      );
-
-      setFilteredCards(matchingCards);
-
-      if (matchingCards.length === 0) {
-        setShowNoOffersMessage(true);
-        setSwiggyOffers([]);
-        setZomatoOffers([]);
+      if (swiggyFiltered.length === 0 && zomatoFiltered.length === 0) {
+        setNoOffersMessage("No offers found for this card.");
       } else {
-        setShowNoOffersMessage(false);
+        setNoOffersMessage("");
       }
+    } catch (error) {
+      console.error("Error fetching or filtering offers:", error);
     }
   };
 
-  const handleCardSelection = (card) => {
-    setSearchTerm(card);
+  const handleSearchChange = (e) => {
+    const value = e.target.value;
+    setSearchTerm(value);
+
+    if (value === "") {
+      setFilteredCards([]);
+      setNoOffersMessage("");
+      setSelectedCard("");
+      setSwiggyOffers([]);
+      setZomatoOffers([]);
+      return;
+    }
+
+    const matchingCards = creditCards.filter((card) =>
+      card.toLowerCase().startsWith(value.toLowerCase())
+    );
+    setFilteredCards(matchingCards);
+
+    if (matchingCards.length === 0) {
+      setNoOffersMessage("No offers found for this card.");
+    } else {
+      setNoOffersMessage("");
+    }
+  };
+
+  const handleCardSelect = (card) => {
     setSelectedCard(card);
+    setSearchTerm(card);
     setFilteredCards([]);
     fetchOffers(card);
   };
@@ -139,60 +135,70 @@ const CreditCardOffers = () => {
   return (
     <div className="container">
       <h1>Offers on Zomato and Swiggy</h1>
-      <input
-        id="creditCardSearch"
-        type="text"
-        value={searchTerm}
-        onChange={handleSearchChange}
-        placeholder="Type to search..."
-        className="search-input"
-      />
+      <div className="search-dropdown">
+        <input
+          id="creditCardSearch"
+          type="text"
+          value={searchTerm}
+          onChange={handleSearchChange}
+          placeholder="Type to search..."
+          className="search-input"
+        />
+        {filteredCards.length > 0 && (
+          <ul className="dropdown-list">
+            {filteredCards.map((card, index) => (
+              <li
+                key={index}
+                className="dropdown-item"
+                onClick={() => handleCardSelect(card)}
+              >
+                {card}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
 
-      {filteredCards.length > 0 && (
-        <ul className="dropdown">
-          {filteredCards.map((card, index) => (
-            <li
-              key={index}
-              className="dropdown-item"
-              onClick={() => handleCardSelection(card)}
-            >
-              {card}
-            </li>
-          ))}
-        </ul>
+      {noOffersMessage && (
+        <p className="no-offers-message" style={{ color: "red", textAlign: "center" }}>
+          {noOffersMessage}
+        </p>
       )}
 
-      {showNoOffersMessage && (
-        <p className="no-offers-message">No offers found for this card.</p>
-      )}
-
-      {(swiggyOffers.length > 0 || zomatoOffers.length > 0) && selectedCard && (
+      {selectedCard && !noOffersMessage && (
         <div className="offers-section">
-          <h2>Offers for {selectedCard}</h2>
-          {swiggyOffers.length > 0 && (
-            <div>
-              <h3>Swiggy</h3>
-              <ul>
-                {swiggyOffers.map((offer, index) => (
-                  <li key={index}>
-                    <strong>Offer:</strong> {offer.offer} <br />
-                    <strong>Coupon Code:</strong> {offer.coupon}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
           {zomatoOffers.length > 0 && (
             <div>
-              <h3>Zomato</h3>
-              <ul>
+              <h2 className="offers-heading">Offers on Zomato</h2>
+              <div className="offers-cards-container">
                 {zomatoOffers.map((offer, index) => (
-                  <li key={index}>
-                    <strong>Offer:</strong> {offer.offer} <br />
-                    <strong>Coupon Code:</strong> {offer.coupon}
-                  </li>
+                  <div key={index} className="offer-card">
+                    <p>
+                      <strong>Offer:</strong> {offer.offer}
+                    </p>
+                    <p>
+                      <strong>Coupon Code:</strong> {offer.coupon}
+                    </p>
+                  </div>
                 ))}
-              </ul>
+              </div>
+            </div>
+          )}
+          {swiggyOffers.length > 0 && (
+            <div>
+              <h2 className="offers-heading">Offers on Swiggy</h2>
+              <div className="offers-cards-container">
+                {swiggyOffers.map((offer, index) => (
+                  <div key={index} className="offer-card">
+                    <p>
+                      <strong>Offer:</strong> {offer.offer}
+                    </p>
+                    <p>
+                      <strong>Coupon Code:</strong> {offer.coupon}
+                    </p>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>
@@ -201,4 +207,4 @@ const CreditCardOffers = () => {
   );
 };
 
-export default CreditCardOffers;
+export default CreditCardDropdown;
