@@ -6,7 +6,6 @@ const CreditCardDropdown = () => {
   const [creditCards, setCreditCards] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredCards, setFilteredCards] = useState([]);
-  const [selectedCard, setSelectedCard] = useState("");
   const [swiggyOffers, setSwiggyOffers] = useState([]);
   const [zomatoOffers, setZomatoOffers] = useState([]);
   const [showNoOffersMessage, setShowNoOffersMessage] = useState(false);
@@ -59,7 +58,7 @@ const CreditCardDropdown = () => {
     fetchData();
   }, []);
 
-  const fetchOffers = async (card) => {
+  const fetchOffers = (card) => {
     const fetchAndParseCSV = (filePath) =>
       new Promise((resolve, reject) => {
         Papa.parse(filePath, {
@@ -78,105 +77,74 @@ const CreditCardDropdown = () => {
           coupon: row["Coupon code"],
         }));
 
-    try {
-      const [swiggyData, zomatoData] = await Promise.all([
-        fetchAndParseCSV("/Swiggy.csv"),
-        fetchAndParseCSV("/Zomato.csv"),
-      ]);
+    const loadOffers = async () => {
+      try {
+        const [swiggyData, zomatoData] = await Promise.all([
+          fetchAndParseCSV("/Swiggy.csv"),
+          fetchAndParseCSV("/Zomato.csv"),
+        ]);
 
-      const swiggyFiltered = filterOffers(swiggyData, card);
-      const zomatoFiltered = filterOffers(zomatoData, card);
+        const swiggyFiltered = filterOffers(swiggyData, card);
+        const zomatoFiltered = filterOffers(zomatoData, card);
 
-      setSwiggyOffers(swiggyFiltered);
-      setZomatoOffers(zomatoFiltered);
+        setSwiggyOffers(swiggyFiltered);
+        setZomatoOffers(zomatoFiltered);
 
-      // If offers exist, do not show the "No offers" message
-      if (swiggyFiltered.length > 0 || zomatoFiltered.length > 0) {
-        setShowNoOffersMessage(false);
-      } else {
-        setShowNoOffersMessage(true);
+        // If offers exist, do not show the "No offers" message
+        setShowNoOffersMessage(
+          swiggyFiltered.length === 0 && zomatoFiltered.length === 0
+        );
+      } catch (error) {
+        console.error("Error fetching or filtering offers:", error);
       }
-    } catch (error) {
-      console.error("Error fetching or filtering offers:", error);
-    }
+    };
+
+    loadOffers();
   };
 
   const handleSearchChange = (e) => {
-    const value = e.target.value.toLowerCase();
+    const value = e.target.value.trim();
     setSearchTerm(value);
 
     if (!value) {
-      // Clear all offers if input is cleared
-      setFilteredCards([]);
+      // Clear all offers and reset message if input is cleared
       setSwiggyOffers([]);
       setZomatoOffers([]);
-      setSelectedCard("");
       setShowNoOffersMessage(false);
-    } else {
-      setFilteredCards(
-        creditCards.filter((card) => card.toLowerCase().startsWith(value))
-      );
-    }
-  };
-
-  const handleCardSelect = (card) => {
-    setSelectedCard(card);
-    setSearchTerm(card);
-    setFilteredCards([]);
-    setShowNoOffersMessage(false); // Reset message visibility
-    fetchOffers(card);
-  };
-
-  const handleSearchSubmit = () => {
-    if (!creditCards.includes(searchTerm)) {
+    } else if (!creditCards.includes(value)) {
+      // Show no offers message if the card name is not in the list
+      setSwiggyOffers([]);
+      setZomatoOffers([]);
       setShowNoOffersMessage(true);
-      setSwiggyOffers([]);
-      setZomatoOffers([]);
     } else {
-      setShowNoOffersMessage(false);
-      fetchOffers(searchTerm);
+      // Fetch offers if the card name exists
+      fetchOffers(value);
     }
   };
 
   return (
     <div className="container">
       <h1>Offers on Zomato and Swiggy</h1>
-      <div className="search-dropdown">
-        <input
-          id="creditCardSearch"
-          type="text"
-          value={searchTerm}
-          onChange={handleSearchChange}
-          placeholder="Type to search..."
-          className="search-input"
-        />
-        <button onClick={handleSearchSubmit}>Search</button>
-        {filteredCards.length > 0 && (
-          <ul className="dropdown-list">
-            {filteredCards.map((card, index) => (
-              <li
-                key={index}
-                className="dropdown-item"
-                onClick={() => handleCardSelect(card)}
-              >
-                {card}
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+      <input
+        id="creditCardSearch"
+        type="text"
+        value={searchTerm}
+        onChange={handleSearchChange}
+        placeholder="Type to search..."
+        className="search-input"
+      />
 
       {showNoOffersMessage && (
         <p className="no-offers-message">No offers found for this card.</p>
       )}
 
-      {selectedCard && (
+      {(swiggyOffers.length > 0 || zomatoOffers.length > 0) && (
         <div className="offers-section">
-          {zomatoOffers.length > 0 && (
+          {swiggyOffers.length > 0 && (
             <div>
-              <h2 className="offers-heading">Offers on Zomato</h2>
+              <h2 className="offers-heading">Offers on Swiggy</h2>
               <div className="offers-cards-container">
-                {zomatoOffers.map((offer, index) => (
+                {swiggyOffers.map((offer, index) => (
                   <div key={index} className="offer-card">
                     <p>
                       <strong>Offer:</strong> {offer.offer}
@@ -189,11 +157,11 @@ const CreditCardDropdown = () => {
               </div>
             </div>
           )}
-          {swiggyOffers.length > 0 && (
+          {zomatoOffers.length > 0 && (
             <div>
-              <h2 className="offers-heading">Offers on Swiggy</h2>
+              <h2 className="offers-heading">Offers on Zomato</h2>
               <div className="offers-cards-container">
-                {swiggyOffers.map((offer, index) => (
+                {zomatoOffers.map((offer, index) => (
                   <div key={index} className="offer-card">
                     <p>
                       <strong>Offer:</strong> {offer.offer}
