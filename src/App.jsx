@@ -10,6 +10,21 @@ const CreditCardDropdown = () => {
   const [swiggyOffers, setSwiggyOffers] = useState([]);
   const [zomatoOffers, setZomatoOffers] = useState([]);
   const [noOffersMessage, setNoOffersMessage] = useState("");
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Check screen width to detect if it's mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768); // You can change the width as needed
+    };
+
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+
+    return () => {
+      window.removeEventListener("resize", checkMobile);
+    };
+  }, []);
 
   // Fetch and parse CSV files
   useEffect(() => {
@@ -160,77 +175,87 @@ const CreditCardDropdown = () => {
 
       <div className="main" style={styles.main}>
         <div className="search-dropdown">
-          <input
-            id="creditCardSearch"
-            type="text"
-            value={searchTerm}
-            onChange={handleSearchChange}
-            placeholder="Type to search..."
-            className="search-input"
-            style={styles.searchInput}
-          />
-          {filteredCards.length > 0 && (
-            <ul className="dropdown-list" style={styles.dropdownList}>
-              {filteredCards.map((card, index) => (
-                <li
-                  key={index}
-                  className="dropdown-item"
-                  onClick={() => handleCardSelect(card)}
-                  style={styles.dropdownItem}
-                >
-                  {card}
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      
+        <input
+  id="creditCardSearch"
+  type="text"
+  value={searchTerm}
+  onChange={handleSearchChange}
+  placeholder="Type to search..."
+  className="search-input"
+  style={{
+    ...styles.searchInput,
+    maxWidth: isMobile ? "500px" : "1000px", // Apply mobile or desktop width
+  }}
+/>
 
-      {noOffersMessage && (
-        <p className="no-offers-message" style={{ color: "red", textAlign: "center" }}>
-          {noOffersMessage}
-        </p>
-      )}
+{filteredCards.length > 0 && (
+  <ul
+    className="dropdown-list"
+    style={{
+      ...styles.dropdownList,
+      maxWidth: isMobile ? "200px" : "1000px", // Apply mobile or desktop width
+    }}
+  >
+    {filteredCards.map((card, index) => (
+      <li
+        key={index}
+        className="dropdown-item"
+        onClick={() => handleCardSelect(card)}
+        style={styles.dropdownItem}
+      >
+        {card}
+      </li>
+    ))}
+  </ul>
+)}
 
-      {selectedCard && !noOffersMessage && (
-        <div className="offers-section">
-          {zomatoOffers.length > 0 && (
-            <div>
-              <h2 className="offers-heading">Offers on Zomato</h2>
-              <div className="offers-cards-container">
-                {zomatoOffers.map((offer, index) => (
-                  <div key={index} className="offer-card">
-                    <p>
-                      <strong>Offer:</strong> {offer.offer}
-                    </p>
-                    <p>
-                      <strong>Coupon Code:</strong> {offer.coupon}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-          {swiggyOffers.length > 0 && (
-            <div>
-              <h2 className="offers-heading">Offers on Swiggy</h2>
-              <div className="offers-cards-container">
-                {swiggyOffers.map((offer, index) => (
-                  <div key={index} className="offer-card">
-                    <p>
-                      <strong>Offer:</strong> {offer.offer}
-                    </p>
-                    <p>
-                      <strong>Coupon Code:</strong> {offer.coupon}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
-      )}
-    </div>
+
+        {noOffersMessage && (
+          <p className="no-offers-message" style={{ color: "red", textAlign: "center" }}>
+            {noOffersMessage}
+          </p>
+        )}
+
+        {selectedCard && !noOffersMessage && (
+          <div className="offers-section">
+            {zomatoOffers.length > 0 && (
+              <div>
+                <h2 className="offers-heading">Offers on Zomato</h2>
+                <div className="offers-cards-container">
+                  {zomatoOffers.map((offer, index) => (
+                    <div key={index} className="offer-card">
+                      <p>
+                        <strong>Offer:</strong> {offer.offer}
+                      </p>
+                      <p>
+                        <strong>Coupon Code:</strong> {offer.coupon}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            {swiggyOffers.length > 0 && (
+              <div>
+                <h2 className="offers-heading">Offers on Swiggy</h2>
+                <div className="offers-cards-container">
+                  {swiggyOffers.map((offer, index) => (
+                    <div key={index} className="offer-card">
+                      <p>
+                        <strong>Offer:</strong> {offer.offer}
+                      </p>
+                      <p>
+                        <strong>Coupon Code:</strong> {offer.coupon}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 };
@@ -271,29 +296,7 @@ const styles = {
     height: "80vh", // Take up 80% of the screen height
     flexDirection: "column",
   },
-  searchInput: {
-    padding: "10px",
-    fontSize: "16px",
-    width: "1000px",
-    border: "1px solid #ddd",
-    borderRadius: "5px",
-    marginBottom: "10px",
-  },
-  dropdownList: {
-    listStyleType: "none",
-    padding: 0,
-    margin: 0,
-    position: "absolute",
-    backgroundColor: "#fff",
-    boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
-    zIndex: "100",
-    width: "1000px",
-  },
-  dropdownItem: {
-    padding: "10px",
-    cursor: "pointer",
-    borderBottom: "1px solid #ddd",
-  },
+ 
 };
 
 export default CreditCardDropdown;
