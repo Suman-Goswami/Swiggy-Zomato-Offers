@@ -11,6 +11,7 @@ const CreditCardDropdown = () => {
   const [zomatoOffers, setZomatoOffers] = useState([]);
   const [noOffersMessage, setNoOffersMessage] = useState("");
 
+  // Fetch and parse CSV files
   useEffect(() => {
     const fetchAndParseCSV = (filePath) =>
       new Promise((resolve, reject) => {
@@ -59,6 +60,7 @@ const CreditCardDropdown = () => {
     fetchData();
   }, []);
 
+  // Fetch offers based on selected card
   const fetchOffers = async (card) => {
     const fetchAndParseCSV = (filePath) =>
       new Promise((resolve, reject) => {
@@ -100,6 +102,7 @@ const CreditCardDropdown = () => {
     }
   };
 
+  // Handle search input
   const handleSearchChange = (e) => {
     const value = e.target.value;
     setSearchTerm(value);
@@ -125,6 +128,7 @@ const CreditCardDropdown = () => {
     }
   };
 
+  // Handle card selection
   const handleCardSelect = (card) => {
     setSelectedCard(card);
     setSearchTerm(card);
@@ -134,30 +138,53 @@ const CreditCardDropdown = () => {
 
   return (
     <div className="container">
+      {/* Navbar Component */}
+      <nav style={styles.navbar}>
+        <div style={styles.logoContainer}>
+          <a href="https://www.myrupaya.in/">
+            <img
+              src="https://static.wixstatic.com/media/f836e8_26da4bf726c3475eabd6578d7546c3b2~mv2.jpg/v1/crop/x_124,y_0,w_3152,h_1458/fill/w_909,h_420,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/dark_logo_white_background.jpg"
+              alt="MyRupaya Logo"
+              style={styles.logo}
+            />
+          </a>
+          <div style={styles.linksContainer}>
+            <a href="https://www.myrupaya.in/" style={styles.link}>
+              Home
+            </a>
+          </div>
+        </div>
+      </nav>
+
       <h1>Offers on Zomato and Swiggy</h1>
-      <div className="search-dropdown">
-        <input
-          id="creditCardSearch"
-          type="text"
-          value={searchTerm}
-          onChange={handleSearchChange}
-          placeholder="Type to search..."
-          className="search-input"
-        />
-        {filteredCards.length > 0 && (
-          <ul className="dropdown-list">
-            {filteredCards.map((card, index) => (
-              <li
-                key={index}
-                className="dropdown-item"
-                onClick={() => handleCardSelect(card)}
-              >
-                {card}
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+
+      <div className="main" style={styles.main}>
+        <div className="search-dropdown">
+          <input
+            id="creditCardSearch"
+            type="text"
+            value={searchTerm}
+            onChange={handleSearchChange}
+            placeholder="Type to search..."
+            className="search-input"
+            style={styles.searchInput}
+          />
+          {filteredCards.length > 0 && (
+            <ul className="dropdown-list" style={styles.dropdownList}>
+              {filteredCards.map((card, index) => (
+                <li
+                  key={index}
+                  className="dropdown-item"
+                  onClick={() => handleCardSelect(card)}
+                  style={styles.dropdownItem}
+                >
+                  {card}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      
 
       {noOffersMessage && (
         <p className="no-offers-message" style={{ color: "red", textAlign: "center" }}>
@@ -204,7 +231,69 @@ const CreditCardDropdown = () => {
         </div>
       )}
     </div>
+    </div>
   );
+};
+
+const styles = {
+  navbar: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: "10px 20px",
+    backgroundColor: "#CDD1C1",
+  },
+  logoContainer: {
+    display: "flex",
+    alignItems: "center",
+  },
+  logo: {
+    width: "100px",
+    height: "100px",
+    marginRight: "20px",
+  },
+  linksContainer: {
+    display: "flex",
+    gap: "35px",
+    flexWrap: "wrap",
+    marginLeft: "40px", // Adjust spacing from the logo
+  },
+  link: {
+    textDecoration: "none",
+    color: "black",
+    fontSize: "18px", // Increased font size
+    fontFamily: "Arial, sans-serif",
+    transition: "color 0.3s ease", // Smooth transition effect
+  },
+  main: {
+    display: "flex",
+    alignItems: "center",
+    height: "80vh", // Take up 80% of the screen height
+    flexDirection: "column",
+  },
+  searchInput: {
+    padding: "10px",
+    fontSize: "16px",
+    width: "1000px",
+    border: "1px solid #ddd",
+    borderRadius: "5px",
+    marginBottom: "10px",
+  },
+  dropdownList: {
+    listStyleType: "none",
+    padding: 0,
+    margin: 0,
+    position: "absolute",
+    backgroundColor: "#fff",
+    boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
+    zIndex: "100",
+    width: "1000px",
+  },
+  dropdownItem: {
+    padding: "10px",
+    cursor: "pointer",
+    borderBottom: "1px solid #ddd",
+  },
 };
 
 export default CreditCardDropdown;

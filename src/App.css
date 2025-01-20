@@ -36,7 +36,6 @@ body {
 
 /* Container styling */
 .container {
-  max-width: 800px;
   margin: 20px auto;
   padding: 20px;
 }
@@ -66,6 +65,7 @@ select {
 /* Offers section */
 .offers-section {
   margin-top: 20px;
+  width: 100%;
 }
 
 .offers-heading {
@@ -110,14 +110,14 @@ select {
 }
 
 .search-input {
-  width: 100%;
   padding: 8px;
   box-sizing: border-box;
+  width: 100%;
+  max-width: 800px;
 }
 
 .dropdown-list {
   position: absolute;
-  width: 100%;
   max-height: 200px;
   overflow-y: auto;
   background: #fff;
@@ -127,7 +127,11 @@ select {
   padding: 0;
   list-style: none;
   z-index: 10;
+  width: 100%;
+  max-width: 800px;
 }
+
+
 
 
 
